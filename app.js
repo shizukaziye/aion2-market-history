@@ -3,7 +3,7 @@ const M = window.MARKET;
 const $ = id => document.getElementById(id);
 const state = { item: 0, scale: 'log', basis: 'nezekan' };
 
-const fmt = n => n == null ? '–' : n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(Math.round(n));
+const fmt = n => n == null ? '–' : n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'k' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(Math.round(n));
 const NEZ = '11102';
 
 function icon(it, cls) {
@@ -33,11 +33,12 @@ function globalSeries(it) {
 
 function renderCards(it) {
   const kr = latest(it.KR), tw = latest(it.TW), gl = latest(globalSeries(it));
+  const krw = it.KRw && it.KRw.asmo && it.KRw.asmo.length ? it.KRw.asmo[it.KRw.asmo.length - 1] : null;
   const krPeak = it.KR.filter(p => p.price != null).reduce((a, p) => p.price > (a ? a.price : -1) ? p : a, null);
   const card = (cls, lbl, p, extra) => `<div class="card ${cls}"><div class="lbl">${lbl}</div><div class="big">${p ? fmt(p.price) : 'no print'}</div><div class="when">${p ? (p.date + ' · week ' + Math.round(p.wk)) : (cls === 'tw' ? 'Taiwan board posts no numbers' : 'no data')}${extra || ''}</div></div>`;
   $('cards').innerHTML =
-    card('kr', 'Korea, last quoted', kr) +
-    card('kr', 'Korea, peak', krPeak) +
+    (krw ? card('kr', 'Korea, world market latest', krw) : card('kr', 'Korea, last quoted', kr)) +
+    card('kr', 'Korea, peak', [krPeak, ...(it.KRw ? [...(it.KRw.asmo || []), ...(it.KRw.elyos || [])] : [])].filter(Boolean).reduce((a, p) => p.price > (a ? a.price : -1) ? p : a, null)) +
     card('tw', 'Taiwan, last quoted', tw) +
     card('gl', state.basis === 'nezekan' ? 'Global, Nezekan now' : 'Global, 6-server median now', gl, gl && gl.listings != null ? ` · ${gl.listings} listed` : '');
 }
@@ -45,7 +46,10 @@ function renderCards(it) {
 // SVG chart: x = weeks since each region's launch, y = Kina
 function renderChart(it) {
   const W = 1100, H = 420, L = 70, R = 20, T = 18, B = 40;
+  const krw = it.KRw || {};
   const series = [
+    { key: 'KRa', color: 'var(--kr)', thin: true, pts: (krw.asmo || []) },
+    { key: 'KRe', color: 'var(--kr)', thin: true, dashed: true, pts: (krw.elyos || []) },
     { key: 'KR', color: 'var(--kr)', pts: it.KR.filter(p => p.price != null) },
     { key: 'TW', color: 'var(--tw)', pts: it.TW.filter(p => p.price != null) },
     { key: 'GL', color: 'var(--gl)', pts: globalSeries(it).filter(p => p.price != null) },
@@ -75,7 +79,8 @@ function renderChart(it) {
   if (glNow) g += `<line x1="${X(glNow.wk)}" x2="${X(glNow.wk)}" y1="${T}" y2="${H - B}" stroke="#66c7ff" stroke-dasharray="3 4" opacity=".6"/><text x="${X(glNow.wk) + 4}" y="${T + 10}" fill="#66c7ff" font-size="11">global today</text>`;
   for (const s of series) {
     const pts = s.pts.slice().sort((a, b) => a.wk - b.wk);
-    if (pts.length > 1) g += `<polyline fill="none" stroke="${s.color}" stroke-width="${s.dashed ? 1.5 : 2.2}" ${s.dashed ? 'stroke-dasharray="5 4"' : ''} opacity="${s.key === 'GLavg' ? .8 : .95}" points="${pts.map(p => X(p.wk) + ',' + Y(p.price)).join(' ')}"/>`;
+    if (pts.length > 1) g += `<polyline fill="none" stroke="${s.color}" stroke-width="${s.thin ? 1.6 : s.dashed ? 1.5 : 2.2}" ${s.dashed ? 'stroke-dasharray="5 4"' : ''} opacity="${s.key === 'GLavg' ? .8 : s.thin ? .85 : .95}" points="${pts.map(p => X(p.wk) + ',' + Y(p.price)).join(' ')}"/>`;
+    if (s.thin) { for (const p of pts) g += `<circle cx="${X(p.wk)}" cy="${Y(p.price)}" r="2.2" fill="${s.color}" opacity=".9" data-tip="${esc('Korea world market (' + (s.key === 'KRa' ? 'Asmodian' : 'Elyos') + ') week of ' + p.date + ': ' + fmt(p.price) + ' avg')}"/>`; continue; }
     if (s.key !== 'GLavg') for (const p of pts) {
       const hollow = p.conf === 'rough';
       g += `<circle cx="${X(p.wk)}" cy="${Y(p.price)}" r="${s.key === 'GL' ? 2.2 : 4.5}" fill="${hollow ? '#161a24' : s.color}" stroke="${s.color}" stroke-width="1.6" data-tip="${esc((s.key === 'GL' ? (state.basis === 'nezekan' ? 'Nezekan ' : 'Global median ') : s.key + ' ') + p.date + ': ' + fmt(p.price) + (p.quote ? ' — ' + p.quote : '') + (p.listings != null ? ' (' + p.listings + ' listed)' : ''))}"/>`;
@@ -102,13 +107,19 @@ function renderTable(it) {
     const low = gl.reduce((a, p) => p.price < a.price ? p : a, gl[0]);
     for (const [lbl, p] of [['first day', first], ['low', low], ['high', peak], ['today', last]]) rows.push({ r: 'GL', date: p.date, wk: p.wk, price: p.price, conf: 'quoted', src: 'https://aion2.exchange', quote: `${state.basis === 'nezekan' ? 'Nezekan' : '6-server median'} daily median of the cheapest ask, ${lbl}${p.listings != null ? ', ' + p.listings + ' listed' : ''}` });
   }
+  for (const fac of ['asmo', 'elyos']) {
+    const w = it.KRw && it.KRw[fac]; if (!w || !w.length) continue;
+    const lbl = fac === 'asmo' ? 'Asmodian' : 'Elyos';
+    const peak = w.reduce((a, p) => p.price > a.price ? p : a, w[0]), low = w.reduce((a, p) => p.price < a.price ? p : a, w[0]);
+    for (const [k, p] of [['first week tracked', w[0]], ['low', low], ['high', peak], ['latest', w[w.length - 1]]]) rows.push({ r: 'KR', date: p.date, wk: p.wk, price: p.price, conf: 'quoted', src: 'https://aeid.gg/market', quote: `aeid.gg world market weekly average, ${lbl}, ${k}` });
+  }
   rows.sort((a, b) => a.wk - b.wk || a.r.localeCompare(b.r));
   $('rows').innerHTML = rows.map(p => `<tr><td class="r-${p.r}">${p.r === 'GL' ? 'Global' : p.r === 'KR' ? 'Korea' : 'Taiwan'}</td><td>${p.date}</td><td class="num">${Math.round(p.wk)}</td><td class="num">${fmt(p.price)}</td><td><span class="conf ${p.conf}">${p.conf}</span></td><td class="quote">${esc(p.quote || '')}${p.note ? ' <i>(' + esc(p.note) + ')</i>' : ''}</td><td>${p.src ? `<a href="${p.src}" target="_blank" rel="noopener">source</a>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="quote">No points.</td></tr>';
 }
 
 function renderItem() {
   const it = M.items[state.item];
-  $('head').innerHTML = `${icon(it, '')}<div><h2>${it.name}</h2><div class="sub">${it.kr} · ${it.tw}</div></div>`;
+  $('head').innerHTML = `${icon(it, '')}<div><h2>${it.name}</h2><div class="sub">${it.krName || it.kr}${it.tw ? ' · ' + it.tw : ''}</div></div>`;
   $('about').textContent = it.about;
   document.querySelectorAll('[data-scale]').forEach(b => b.classList.toggle('on', b.dataset.scale === state.scale));
   document.querySelectorAll('[data-basis]').forEach(b => b.classList.toggle('on', b.dataset.basis === state.basis));

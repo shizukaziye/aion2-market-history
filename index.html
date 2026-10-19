@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aion 2 market history: Korea vs Taiwan vs Global</title>
 <meta name="description" content="Dated Kina prices of Aion 2 crafting materials on the Korean and Taiwanese servers compared with the global servers, on a weeks-since-launch axis.">
-<link rel="stylesheet" href="styles.css?v=1">
+<link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
 <header>
   <h1>Aion 2 market history: Korea vs Taiwan vs Global</h1>
-  <p>Korean and Taiwanese prices are quoted from forum posts (DCInside, Inven, Bahamut) with the source behind every point; global prices are daily medians of the cheapest ask from aion2.exchange. Solid dots are quoted prices, hollow dots are rough mentions. <span id="built"></span></p>
+  <p>Korea: forum quotes (DCInside, Inven) for Nov 2025 to Mar 2026, then aeid.gg's world-market weekly averages from Mar 25 2026. Taiwan: Bahamut posts and exchange screenshots (the board rarely writes numbers). Global: daily medians of the cheapest ask from aion2.exchange. Solid dots are quoted prices, hollow dots are rough mentions. <span id="built"></span></p>
 </header>
 <nav class="tabs" id="tabs"></nav>
 <main>
@@ -26,7 +26,7 @@
   </div>
   <div class="chartwrap">
     <div id="chart"></div>
-    <div class="legend"><span class="lkr">Korea</span><span class="ltw">Taiwan</span><span class="lgl">Global</span><span class="lgl2">6-server median (dashed, when Nezekan is shown)</span></div>
+    <div class="legend"><span class="lkr">Korea: big dots = forum quotes, thin line = aeid.gg world-market weekly average (Asmodian solid, Elyos dashed, Mar 25 to Oct 14 2026)</span><span class="ltw">Taiwan</span><span class="lgl">Global</span><span class="lgl2">6-server median (dashed, when Nezekan is shown)</span></div>
   </div>
   <table>
     <thead><tr><th>Region</th><th>Date</th><th class="num">Week</th><th class="num">Kina</th><th>Confidence</th><th>Quote</th><th></th></tr></thead>
@@ -36,7 +36,8 @@
     <summary>How to read this</summary>
     <div class="formula">week = (date − launch) / 7
 launch: Korea and Taiwan 2025-11-19, Global 2026-10-05
-Korea / Taiwan point = a price written in a forum post that day (quoted) or a post that says a price moved without a number (rough, hollow)
+Korea / Taiwan point = a price written in a forum post or read off an exchange screenshot that day (quoted) or a post that says a price moved without a number (rough, hollow)
+Korea line = aeid.gg world-market weekly average (api-aeid.lostgld.com /graph-prices, period=week); the Korean refining-stone ladder is named differently from global (장인 = Expert's, 달인 = Artisan's, 달인의 최상급 = Artisan's Ultimate) and its cheap tiers are near worthless there
 Global point = median over the day of the hourly cheapest ask on aion2.exchange (Nezekan, or the median of NAE Nezekan, Siel, Azphel, Israphel and EU Kaisinel, Azphel)
 Korean prices are written in 만 (10,000): "사념 250" = 2.5M</div>
     <p>Where the Taiwan board posted no number the card says so; Taiwan's posts describe the same arc as Korea (materials "terrifyingly expensive" by their Season 2) without prices. Kina on the three services is not the same currency: Korea's devalued through 2026, the global servers have a 1M-a-day mob cap from launch. Compare shapes and weeks, not absolute Kina. Item icons are served by gamers4.life; items it does not carry show no icon.</p>
@@ -44,7 +45,7 @@ Korean prices are written in 만 (10,000): "사념 250" = 2.5M</div>
   </details>
 </main>
 <div class="tip" id="tip"></div>
-<script src="data.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="data.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>
