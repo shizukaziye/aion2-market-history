@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aion 2 market history: Korea vs Taiwan vs Global</title>
+<meta name="description" content="Dated Kina prices of Aion 2 crafting materials on the Korean and Taiwanese servers compared with the global servers, on a weeks-since-launch axis.">
+<link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+<header>
+  <h1>Aion 2 market history: Korea vs Taiwan vs Global</h1>
+  <p>Korean and Taiwanese prices are quoted from forum posts (DCInside, Inven, Bahamut) with the source behind every point; global prices are daily medians of the cheapest ask from aion2.exchange. Solid dots are quoted prices, hollow dots are rough mentions. <span id="built"></span></p>
+</header>
+<nav class="tabs" id="tabs"></nav>
+<main>
+  <div class="head" id="head"></div>
+  <p class="about" id="about"></p>
+  <div class="cards" id="cards"></div>
+  <div class="controls">
+    <button class="mbtn on" data-scale="log" onclick="setScale('log')">Log scale</button>
+    <button class="mbtn" data-scale="lin" onclick="setScale('lin')">Linear</button>
+    <span style="width:12px"></span>
+    <button class="mbtn on" data-basis="nezekan" onclick="setBasis('nezekan')">Global = Nezekan</button>
+    <button class="mbtn" data-basis="avg" onclick="setBasis('avg')">Global = 6-server median</button>
+  </div>
+  <div class="chartwrap">
+    <div id="chart"></div>
+    <div class="legend"><span class="lkr">Korea</span><span class="ltw">Taiwan</span><span class="lgl">Global</span><span class="lgl2">6-server median (dashed, when Nezekan is shown)</span></div>
+  </div>
+  <table>
+    <thead><tr><th>Region</th><th>Date</th><th class="num">Week</th><th class="num">Kina</th><th>Confidence</th><th>Quote</th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <details>
+    <summary>How to read this</summary>
+    <div class="formula">week = (date − launch) / 7
+launch: Korea and Taiwan 2025-11-19, Global 2026-10-05
+Korea / Taiwan point = a price written in a forum post that day (quoted) or a post that says a price moved without a number (rough, hollow)
+Global point = median over the day of the hourly cheapest ask on aion2.exchange (Nezekan, or the median of NAE Nezekan, Siel, Azphel, Israphel and EU Kaisinel, Azphel)
+Korean prices are written in 만 (10,000): "사념 250" = 2.5M</div>
+    <p>Where the Taiwan board posted no number the card says so; Taiwan's posts describe the same arc as Korea (materials "terrifyingly expensive" by their Season 2) without prices. Kina on the three services is not the same currency: Korea's devalued through 2026, the global servers have a 1M-a-day mob cap from launch. Compare shapes and weeks, not absolute Kina. Item icons are served by gamers4.life; items it does not carry show no icon.</p>
+    <p>Data and build scripts: <a href="https://github.com/shizukaziye/aion2-market-history">github.com/shizukaziye/aion2-market-history</a>. Global series refresh with <code>tools/pull_global.py</code> then <code>tools/build_data.py</code>.</p>
+  </details>
+</main>
+<div class="tip" id="tip"></div>
+<script src="data.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
